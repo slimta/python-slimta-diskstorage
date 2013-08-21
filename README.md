@@ -29,8 +29,8 @@ Refer to the [API Documentation][2] and [Manual][3] for more information on
 using this extension.
 
 [1]: http://slimta.org/
-[2]: http://docs.slimta.org/en/latest/api/extra.diskstorage.html
-[3]: http://docs.slimta.org/en/latest/manual/extensions.html#disk-storage
+[2]: http://docs.slimta.org/latest/api/extra.diskstorage.html
+[3]: http://docs.slimta.org/latest/manual/extensions.html#disk-storage
 [4]: http://man7.org/linux/man-pages/man7/aio.7.html
 [5]: https://github.com/slimta/python-slimta
 
