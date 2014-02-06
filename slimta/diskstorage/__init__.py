@@ -93,7 +93,10 @@ class AioFile(object):
         return self.event.get()
 
     def dump(self, data):
-        data_view = memoryview(data)
+        try:
+            data_view = memoryview(data)
+        except NameError:
+            data_view = data
         data_len = len(data)
         offset = 0
         self._start_keep_awake_thread()
