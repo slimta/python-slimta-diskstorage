@@ -40,7 +40,7 @@ from pyaio import aio_read, aio_write
 import gevent
 from gevent.event import AsyncResult
 
-from slimta.queue import QueueStorage 
+from slimta.queue import QueueStorage
 from slimta import logging
 
 __all__ = ['DiskStorage']
