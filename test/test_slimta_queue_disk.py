@@ -66,6 +66,16 @@ class TestDiskStorage(unittest.TestCase):
         self.assertEqual(vars(env), vars(written_env))
         self.assertEqual(2, written_meta['attempts'])
 
+    def test_set_recipients_delivered(self):
+        id, env = self._write_test_envelope()
+        self.disk.set_recipients_delivered(id, [1])
+        self.disk.set_recipients_delivered(id, [3])
+
+        written_env = self.disk.ops.read_env(id)
+        written_meta = self.disk.ops.read_meta(id)
+        self.assertEqual(vars(env), vars(written_env))
+        self.assertEqual([1, 3], written_meta['delivered_indexes'])
+
     def test_load(self):
         queued = [self._write_test_envelope(),
                   self._write_test_envelope()]
@@ -83,10 +93,13 @@ class TestDiskStorage(unittest.TestCase):
                 raise ValueError('Queued does not match loaded')
 
     def test_get(self):
-        id, env = self._write_test_envelope()
+        id, env = self._write_test_envelope(['rcpt1@example.com',
+                                             'rcpt2@example.com'])
         self.disk.increment_attempts(id)
+        self.disk.set_recipients_delivered(id, [0])
         get_env, get_attempts = self.disk.get(id)
-        self.assertEqual(vars(env), vars(get_env))
+        self.assertEqual('sender@example.com', get_env.sender)
+        self.assertEqual(['rcpt2@example.com'], get_env.recipients)
         self.assertEqual(1, get_attempts)
 
     def test_remove(self):
