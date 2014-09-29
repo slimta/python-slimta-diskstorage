@@ -238,6 +238,14 @@ class DiskStorage(QueueStorage):
         log.update_meta(id, attempts=new_attempts)
         return new_attempts
 
+    def set_recipients_delivered(self, id, rcpt_indexes):
+        meta = self.ops.read_meta(id)
+        current = meta.get('delivered_indexes', [])
+        new = current + rcpt_indexes
+        meta['delivered_indexes'] = new
+        self.ops.write_meta(id, meta)
+        log.update_meta(id, delivered_indexes=rcpt_indexes)
+
     def load(self):
         for id in self.ops.get_ids():
             meta = self.ops.read_meta(id)
@@ -246,6 +254,8 @@ class DiskStorage(QueueStorage):
     def get(self, id):
         meta = self.ops.read_meta(id)
         env = self.ops.read_env(id)
+        delivered_rcpts = meta.get('delivered_indexes', [])
+        self._remove_delivered_rcpts(env, delivered_rcpts)
         return env, meta['attempts']
 
     def remove(self, id):
