@@ -34,6 +34,7 @@ import os
 import uuid
 import os.path
 from tempfile import mkstemp
+from functools import partial
 
 from six.moves import cPickle
 
@@ -59,7 +60,6 @@ class AioFile(object):
     def __init__(self, path, tmp_dir=None):
         self.path = path
         self.tmp_dir = tmp_dir
-        self.event = AsyncResult()
 
     @classmethod
     def _start_keep_awake_thread(cls):
@@ -72,26 +72,29 @@ class AioFile(object):
         cls._keep_awake_refs -= 1
         if cls._keep_awake_refs <= 0:
             cls._keep_awake_thread.kill()
+            cls._keep_awake_thread = None
 
     @classmethod
     def _keep_awake(cls):
         while True:
             gevent.sleep(0.001)
 
-    def _write_callback(self, ret, errno):
+    def _write_callback(self, event, ret, errno):
         if ret > 0:
-            self.event.set(ret)
+            event.set(ret)
         else:
             exc = IOError(errno, os.strerror(errno))
-            self.event.set_exception(exc)
+            event.set_exception(exc)
 
     def _write_piece(self, fd, data, data_len, offset):
         remaining = data_len - offset
         if remaining > self.chunk_size:
             remaining = self.chunk_size
         piece = data[offset:offset+remaining]
-        aio_write(fd, piece, offset, self._write_callback)
-        return self.event.get()
+        event = AsyncResult()
+        callback = partial(self._write_callback, event)
+        aio_write(fd, piece, offset, callback)
+        return event.get()
 
     def dump(self, data):
         try:
@@ -116,19 +119,21 @@ class AioFile(object):
     def pickle_dump(self, obj):
         return self.dump(cPickle.dumps(obj, cPickle.HIGHEST_PROTOCOL))
 
-    def _read_callback(self, buf, ret, errno):
+    def _read_callback(self, event, buf, ret, errno):
         if ret > 0:
-            self.event.set(buf)
+            event.set(buf)
         elif ret == 0:
             exc = EOFError()
-            self.event.set_exception(exc)
+            event.set_exception(exc)
         else:
             exc = IOError(errno, os.strerror(errno))
-            self.event.set_exception(exc)
+            event.set_exception(exc)
 
     def _read_piece(self, fd, offset):
-        aio_read(fd, offset, self.chunk_size, self._read_callback)
-        return self.event.get()
+        event = AsyncResult()
+        callback = partial(self._read_callback, event)
+        aio_read(fd, offset, self.chunk_size, callback)
+        return event.get()
 
     def load(self):
         data = bytearray()
@@ -141,7 +146,7 @@ class AioFile(object):
                 offset += len(buf)
                 data.extend(buf)
         except EOFError:
-            return str(data)
+            return bytes(data)
         finally:
             os.close(fd)
             self._stop_keep_awake_thread()
