@@ -33,8 +33,9 @@ from __future__ import absolute_import
 import os
 import uuid
 import os.path
-import cPickle
 from tempfile import mkstemp
+
+from six.moves import cPickle
 
 from pyaio import aio_read, aio_write
 import gevent
