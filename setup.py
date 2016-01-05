@@ -23,7 +23,7 @@ from setuptools import setup, find_packages
 
 
 setup(name='python-slimta-diskstorage',
-      version='0.2.0',
+      version='0.3.0',
       author='Ian Good',
       author_email='icgood@gmail.com',
       description='Adds a filesystem-based queue extension to python-slimta.',
@@ -31,17 +31,19 @@ setup(name='python-slimta-diskstorage',
       url='http://slimta.org/',
       packages=find_packages(),
       namespace_packages=['slimta'],
-      install_requires=['python-slimta >= 1.1.0',
+      install_requires=['python-slimta >= 3.0',
                         'six >= 1',
                         'pyaio >= 0.4'],
-      tests_require=['nose'],
-      test_suite = 'nose.collector',
       classifiers=['Development Status :: 3 - Alpha',
                    'Topic :: Communications :: Email :: Mail Transport Agents',
                    'Intended Audience :: Developers',
                    'Intended Audience :: Information Technology',
                    'License :: OSI Approved :: MIT License',
-                   'Programming Language :: Python'])
+                   'Programming Language :: Python',
+                   'Programming Language :: Python :: 2.7',
+                   'Programming Language :: Python :: 3.3',
+                   'Programming Language :: Python :: 3.4',
+                   'Programming Language :: Python :: 3.5'])
 
 
-# vim:et:fdm=marker:sts=4:sw=4:ts=4
+# vim:et:fdm=markar:sts=4:sw=4:ts=4
