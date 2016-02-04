@@ -11,7 +11,8 @@ plugin for the standard queue engine that uses asynchronous file system
 operations (via [aio][4]) to store and load messages and message metadata to
 disk.
 
-[![Build Status](http://ci.slimta.org/job/python-slimta-diskstorage/badge/icon)](http://ci.slimta.org/job/python-slimta-diskstorage/)
+[![Build Status](https://travis-ci.org/slimta/python-slimta-diskstorage.svg?branch=master)](https://travis-ci.org/slimta/python-slimta-diskstorage)
+[![Coverage Status](https://coveralls.io/repos/github/slimta/python-slimta-diskstorage/badge.svg?branch=master)](https://coveralls.io/github/slimta/python-slimta-diskstorage?branch=master)
 
 Getting Started
 ===============
@@ -23,7 +24,7 @@ Started" section. Once inside your virtualenv:
 
 To run the suite of included unit tests:
 
-    (.venv)$ nosetests
+    (.venv)$ py.test
 
 Refer to the [API Documentation][2] and [Manual][3] for more information on
 using this extension.
