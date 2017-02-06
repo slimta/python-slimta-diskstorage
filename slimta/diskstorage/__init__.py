@@ -264,8 +264,11 @@ class DiskStorage(QueueStorage):
 
     def load(self):
         for id in self.ops.get_ids():
-            meta = self.ops.read_meta(id)
-            yield (meta['timestamp'], id)
+            try:
+                meta = self.ops.read_meta(id)
+                yield (meta['timestamp'], id)
+            except OSError, e:
+                logging.logging.getLogger(__name__).exception("Cannot load id %r from queue" % id)
 
     def get(self, id):
         meta = self.ops.read_meta(id)
