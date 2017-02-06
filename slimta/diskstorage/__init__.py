@@ -41,6 +41,7 @@ from six.moves import cPickle
 from pyaio import aio_read, aio_write
 import gevent
 from gevent.event import AsyncResult
+from gevent.lock import Semaphore
 
 from slimta.queue import QueueStorage
 from slimta import logging
@@ -54,6 +55,7 @@ class AioFile(object):
 
     _keep_awake_thread = None
     _keep_awake_refs = 0
+    _keep_awake_lock = Semaphore(1)
 
     chunk_size = (16 << 10)
 
@@ -63,16 +65,24 @@ class AioFile(object):
 
     @classmethod
     def _start_keep_awake_thread(cls):
-        if not cls._keep_awake_thread:
-            cls._keep_awake_thread = gevent.spawn(cls._keep_awake)
-        cls._keep_awake_refs += 1
+        cls._keep_awake_lock.acquire()
+        try:
+            if not cls._keep_awake_thread:
+                cls._keep_awake_thread = gevent.spawn(cls._keep_awake)
+            cls._keep_awake_refs += 1
+        finally:
+            cls._keep_awake_lock.release()
 
     @classmethod
     def _stop_keep_awake_thread(cls):
-        cls._keep_awake_refs -= 1
-        if cls._keep_awake_refs <= 0:
-            cls._keep_awake_thread.kill()
-            cls._keep_awake_thread = None
+        cls._keep_awake_lock.acquire()
+        try:
+            cls._keep_awake_refs -= 1
+            if cls._keep_awake_refs <= 0:
+                cls._keep_awake_thread.kill()
+                cls._keep_awake_thread = None
+        finally:
+            cls._keep_awake_lock.release()
 
     @classmethod
     def _keep_awake(cls):
